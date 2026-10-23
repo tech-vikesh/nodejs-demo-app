@@ -1,0 +1,51 @@
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main',
+                    url: 'https://github.com/tech-vikesh/nodejs-demo-app.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo 'Building Node.js application'
+                sh 'node --version'
+                sh 'npm --version'
+                sh 'ls -la'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                echo 'Testing Node.js application'
+                sh 'node --check app.js'
+                echo 'Node.js syntax check passed'
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo 'Deploying Node.js application'
+                sh 'cp app.js /opt/nodejs-demo-app/app.js'
+                sh 'cp package.json /opt/nodejs-demo-app/package.json'
+                sh 'sudo /usr/bin/systemctl restart nodejs-demo-app'
+                sh 'sleep 2'
+                sh 'curl -f http://localhost:3000'
+                echo 'Deployment successful'
+            }
+        }
+    }
+
+    post {
+        success {
+            echo 'CI/CD pipeline completed successfully!'
+        }
+        failure {
+            echo 'Pipeline failed. Check Console Output.'
+        }
+    }
+}
